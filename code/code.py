@@ -15,16 +15,23 @@ from sklearn import model_selection,preprocessing
 df = pd.read_csv('../data/[new] yancheng_train_20171226.csv')
 test = pd.read_csv('../data/yancheng_testA_20171225.csv')
 train = df.copy()
-'''
-group_id = train[(train.sale_date==201611)].groupby(['class_id']).sale_quantity.sum().round()
-predict = group_id.reset_index()
-predict['sale_quantity'] = predict['sale_quantity'].map(lambda x:int(x+10))
-result = pd.merge(test[['predict_date','class_id']],predict,how='left',on=['class_id'])
-result.fillna(0)
-result.columns = ['predict_date','class_id','predict_quantity']
 
-result.to_csv('../result/predict.csv',index=False,header=True)
-'''
+group_id = train[(train.sale_date==201710)].groupby(['class_id']).sale_quantity.sum().round()
+group_id0 = train[(train.sale_date==201709)].groupby(['class_id']).sale_quantity.sum().round()
+predict = group_id.reset_index()
+predict0 = group_id0.reset_index()
+#predict['sale_quantity'] = predict['sale_quantity'].map(lambda x:int(x+30))
+result = pd.merge(test[['predict_date','class_id']],predict,how='left',on=['class_id'])
+result = result.fillna(0)
+result0 = pd.merge(test[['predict_date','class_id']],predict0,how='left',on=['class_id'])
+result0 = result0.fillna(0)
+result.columns = ['predict_date','class_id','predict_quantity']
+result0.columns = ['predict_date','class_id','predict_quantity']
+result0['predict_quantity_1'] = result['predict_quantity'] - result0['predict_quantity']
+result0['predict_quantity_1'] = result0['predict_quantity_1'].map(lambda x:x if x > 0 else 0)
+
+result.to_csv('../result/predict201710_plus_with_201709_difference.csv',index=False,header=True)
+
 '''
 tmp = 201201
 tmp0 = 201201
@@ -45,8 +52,8 @@ for i in range(1,73):
 #plt.show()
 
 #分离sale_date，分为销售年份和月份
-train['sale_date_year'] = train['sale_date'].map(lambda x:int(x/100))
-train['sale_date_month'] = train['sale_date'].map(lambda x:x%100)
+#train['sale_date_year'] = train['sale_date'].map(lambda x:int(x/100))
+#train['sale_date_month'] = train['sale_date'].map(lambda x:x%100)
 
 #lbl = preprocessing.LabelEncoder()
 #lbl.fit(list(train['gearbox_type'].values))
@@ -60,7 +67,6 @@ plt.show()
 '''
 #deal with missing value
 for index,row in train.iterrows():
-    print(index)
     ele = ['compartment', 'type_id', 'level_id', 'department_id', 'TR', 'gearbox_type', 'displacement', 'if_charging',
            'price_level',
            'driven_type_id', 'newenergy_type_id', 'emission_standards_id', 'if_MPV_id', 'if_luxurious_id', 'power',
@@ -109,11 +115,14 @@ for index,row in train.iterrows():
                     price = row2.price
         train.loc[index:index,['price']] = price
 
-train['fuel_type_id_1'] = train['fuel_type_id'].map(lambda x:int(x))
+price_level_dict = {'5WL':1,'5-8W':2,'8-10W':3,'10-15W':4,'15-20W':5,'20-25W':6,'25-35W':7,'35-50W':8,'50-75W':9}
+
+train['fuel_type_id'] = train['fuel_type_id'].map(lambda x:int(x))
 #train['rated_passenger_1'] = train['rated_passenger'].map(lambda x:int(str(x)[-1:]))
-train['price_1'] = train['price'].map(lambda x:float(x))
-train['level_id_1'] = train['level_id'].map(lambda x:int(x) if x != '-' else 0)
-train['engine_torque_1'] = train['engine_torque'].map(lambda x: '0' if x == '-' else x)
+train['price'] = train['price'].map(lambda x:float(x))
+train['level_id'] = train['level_id'].map(lambda x:int(x) if x != '-' else 0)
+train['engine_torque'] = train['engine_torque'].map(lambda x: '0' if x == '-' else x)
+train['price_level'] = train['price_level'].map(lambda x:int(price_level_dict[x]))
 
 file = open('../analyse/columnsType2.txt','w')
 
@@ -134,7 +143,6 @@ for col in train.columns:
         lbl.fit(list(train[col].values))
         train[col] = lbl.transform(list(train[col].values))
 file.close()
-
 train.to_csv("../data/preprocessed/precrocessed.csv",index=False,header=True)
 
 #print(train.head(3))
