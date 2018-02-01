@@ -1,0 +1,16 @@
+folder 'analyse':
+    some details about every attributes,'columnsType.txt' includes every attributes' different value-domain and their value-type without any preprocessed;
+    and 'columnstype2.txt' includes the same content as 'columnsType.txt',but do some preprocessed operators for missing-value and then encode 'object' type attributes;
+
+folder 'code':
+    'code.py' :use to do some preprocessing operators;
+    'learning.py':use to do some analysing operatores;
+    'model.py':use to build some models,such as xgboost;
+folder 'data':
+    '[new] yancheng_train_20171226.csv':the training data download from official website;
+    'yancheng_testA_20171225.csv':the test data download from official website;
+    folder 'preprocessed':include data file which has been preprocessed;
+folder 'plot':
+    including some plots;
+folder 'result':
+    use to store the result
