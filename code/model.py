@@ -4,7 +4,7 @@ import xgboost as xgb
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("../data/preprocessed/precrocessed.csv")
+df = pd.read_csv("../data/preprocessed/precrocessed2.csv")
 res = pd.read_csv("../data/yancheng_testA_20171225.csv")
 res_df = res.copy()
 res_df = pd.merge(res_df[['predict_date','class_id']],df,how='left',on=['class_id'])

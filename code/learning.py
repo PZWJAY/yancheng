@@ -7,8 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
-
-df_train = pd.read_csv('../data/[new] yancheng_train_20171226.csv')
+df_train = pd.read_csv('../data/preprocessed/precrocessed2.csv')
 df_train_sub = df_train.groupby(['sale_date','class_id']).sale_quantity.sum().round()
 #sns.distplot(df_train_sub)
 #plt.show()

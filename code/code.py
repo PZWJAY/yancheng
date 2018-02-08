@@ -15,7 +15,7 @@ from sklearn import model_selection,preprocessing
 df = pd.read_csv('../data/[new] yancheng_train_20171226.csv')
 test = pd.read_csv('../data/yancheng_testA_20171225.csv')
 train = df.copy()
-
+'''
 group_id = train[(train.sale_date==201710)].groupby(['class_id']).sale_quantity.sum().round()
 group_id0 = train[(train.sale_date==201709)].groupby(['class_id']).sale_quantity.sum().round()
 predict = group_id.reset_index()
@@ -31,7 +31,7 @@ result0['predict_quantity_1'] = result['predict_quantity'] - result0['predict_qu
 result0['predict_quantity_1'] = result0['predict_quantity_1'].map(lambda x:x if x > 0 else 0)
 
 result.to_csv('../result/predict201710_plus_with_201709_difference.csv',index=False,header=True)
-
+'''
 '''
 tmp = 201201
 tmp0 = 201201
@@ -52,12 +52,9 @@ for i in range(1,73):
 #plt.show()
 
 #分离sale_date，分为销售年份和月份
-#train['sale_date_year'] = train['sale_date'].map(lambda x:int(x/100))
-#train['sale_date_month'] = train['sale_date'].map(lambda x:x%100)
-
-#lbl = preprocessing.LabelEncoder()
-#lbl.fit(list(train['gearbox_type'].values))
-#train['gearbox_type'] = lbl.transform(list(train['gearbox_type'].values))
+train['sale_date_year'] = train['sale_date'].map(lambda x:int(x/100))
+train['sale_date_month'] = train['sale_date'].map(lambda x:x%100)
+print('I have finished spliting date')
 '''
 tmp0 = train[(train.sale_date_year == 2017)].groupby(['sale_date_month','gearbox_type']).sale_quantity.sum().round()
 tmp0 = tmp0.reset_index()
@@ -115,16 +112,34 @@ for index,row in train.iterrows():
                     price = row2.price
         train.loc[index:index,['price']] = price
 
+    if row.engine_torque == '-':
+        val = ''
+        max_proximity = 0
+        for index2, row2 in train.iterrows():
+            if index == index2 or row2.engine_torque == '-':
+                continue
+            cnt = 0
+            for e in ele:
+                if row[e] == row2[e]:
+                    cnt += 1
+            if cnt > max_proximity:
+                max_proximity = cnt
+                val = row2.engine_torque
+        # row.engine_torque = val
+        train.loc[index:index, ['engine_torque']] = val
+
+print('I have finished dealing with fuel_type_id,price and engine_torque')
 price_level_dict = {'5WL':1,'5-8W':2,'8-10W':3,'10-15W':4,'15-20W':5,'20-25W':6,'25-35W':7,'35-50W':8,'50-75W':9}
 
 train['fuel_type_id'] = train['fuel_type_id'].map(lambda x:int(x))
 #train['rated_passenger_1'] = train['rated_passenger'].map(lambda x:int(str(x)[-1:]))
 train['price'] = train['price'].map(lambda x:float(x))
 train['level_id'] = train['level_id'].map(lambda x:int(x) if x != '-' else 0)
-train['engine_torque'] = train['engine_torque'].map(lambda x: '0' if x == '-' else x)
+train['engine_torque'] = train['engine_torque'].map(lambda x: (float(x[:x.index('/')]) + float(x[x.index('/')+1:]))/2 if '/' in x else float(x))
 train['price_level'] = train['price_level'].map(lambda x:int(price_level_dict[x]))
-
-file = open('../analyse/columnsType2.txt','w')
+train['power'] = train['power'].map(lambda x: (float(x[:x.index('/')]) + float(x[x.index('/')+1:]))/2 if type(x) != float and '/' in x else float(x))
+print('I have finished all missing value')
+file = open('../analyse/columnsType3.txt','w')
 
 #one hot encoding
 for col in train.columns:
@@ -143,6 +158,6 @@ for col in train.columns:
         lbl.fit(list(train[col].values))
         train[col] = lbl.transform(list(train[col].values))
 file.close()
-train.to_csv("../data/preprocessed/precrocessed.csv",index=False,header=True)
+train.to_csv("../data/preprocessed/precrocessed2.csv",index=False,header=True)
 
 #print(train.head(3))
